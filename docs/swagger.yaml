@@ -1,0 +1,475 @@
+definitions:
+  handlers.CreateBookingRequest:
+    properties:
+      capacitity_people:
+        type: integer
+      end_date:
+        type: string
+      room_id:
+        type: integer
+      start_date:
+        type: string
+      title:
+        maxLength: 100
+        minLength: 3
+        type: string
+      user_id:
+        type: integer
+    required:
+    - capacitity_people
+    - end_date
+    - room_id
+    - start_date
+    - title
+    - user_id
+    type: object
+  handlers.CreateRoomRequest:
+    properties:
+      capacitity:
+        minimum: 1
+        type: integer
+      name:
+        maxLength: 100
+        minLength: 3
+        type: string
+    required:
+    - capacitity
+    - name
+    type: object
+  handlers.CreateUserRequest:
+    properties:
+      email:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 3
+        type: string
+    required:
+    - email
+    - name
+    type: object
+  handlers.EditCapacitityRequest:
+    properties:
+      capacitity:
+        minimum: 1
+        type: integer
+    required:
+    - capacitity
+    type: object
+  models.Booking:
+    properties:
+      capacitity_people:
+        type: integer
+      created_at:
+        type: string
+      end_date:
+        type: string
+      id:
+        type: integer
+      room_id:
+        type: integer
+      start_date:
+        type: string
+      status:
+        type: boolean
+      title:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  models.Room:
+    properties:
+      capacitity:
+        type: integer
+      created_at:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      name:
+        type: string
+    type: object
+  models.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        maxLength: 100
+        minLength: 3
+        type: string
+    required:
+    - email
+    - name
+    type: object
+  utils.ErrorResponse:
+    properties:
+      code:
+        type: string
+      error:
+        type: string
+    type: object
+  utils.SuccessResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  utils.UserResponse:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+host: localhost:3000
+info:
+  contact:
+    email: lucasterencio145@gmail.com
+    name: Lucas Terêncio
+  description: Esta é uma API de reservas de salas usando Gin e Swagger.
+  termsOfService: http://swagger.io/terms/
+  title: API de Reservas de Salas
+  version: "1.0"
+paths:
+  /booking:
+    get:
+      consumes:
+      - application/json
+      description: Retorna uma lista de todas as reservas cadastradas no sistema
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de reservas retornada com sucesso
+          schema:
+            items:
+              $ref: '#/definitions/models.Booking'
+            type: array
+        "500":
+          description: Erro interno do servidor
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Listar Reservas
+      tags:
+      - bookings
+    post:
+      consumes:
+      - application/json
+      description: Cria uma nova reserva de sala
+      parameters:
+      - description: Dados da reserva
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreateBookingRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Reserva criada com sucesso
+          schema:
+            $ref: '#/definitions/models.Booking'
+        "400":
+          description: Dados inválidos
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Erro interno do servidor
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Criar Reserva
+      tags:
+      - bookings
+  /booking/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Desativa uma reserva (soft delete), liberando a sala para novas
+        reservas
+      parameters:
+      - description: ID da reserva
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Reserva desativada com sucesso
+          schema:
+            additionalProperties:
+              type: boolean
+            type: object
+        "400":
+          description: ID inválido
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Reserva não encontrada
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Erro interno do servidor
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Desativar Reserva
+      tags:
+      - bookings
+  /booking/by-room:
+    get:
+      consumes:
+      - application/json
+      description: Retorna todas as reservas de uma sala específica
+      parameters:
+      - description: ID da sala
+        in: query
+        name: room_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de reservas da sala
+          schema:
+            items:
+              $ref: '#/definitions/models.Booking'
+            type: array
+        "400":
+          description: room_id inválido
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Erro interno do servidor
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Listar Reservas por Sala
+      tags:
+      - bookings
+  /booking/by-user:
+    get:
+      consumes:
+      - application/json
+      description: Retorna todas as reservas de um usuário específico
+      parameters:
+      - description: Nome do usuário
+        in: query
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de reservas do usuário
+          schema:
+            items:
+              $ref: '#/definitions/models.Booking'
+            type: array
+        "500":
+          description: Erro interno do servidor
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Listar Reservas por Usuário
+      tags:
+      - bookings
+  /room:
+    get:
+      consumes:
+      - application/json
+      description: Retorna uma lista de todas as salas cadastradas no sistema
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de salas retornada com sucesso
+          schema:
+            items:
+              $ref: '#/definitions/models.Room'
+            type: array
+        "500":
+          description: Erro interno do servidor
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Listar Salas
+      tags:
+      - rooms
+    post:
+      consumes:
+      - application/json
+      description: Cria uma nova sala no sistema
+      parameters:
+      - description: Dados da sala
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreateRoomRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Sala criada com sucesso
+          schema:
+            $ref: '#/definitions/utils.SuccessResponse'
+        "400":
+          description: Dados inválidos
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Erro interno do servidor
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Criar Sala
+      tags:
+      - rooms
+  /room/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Atualiza a capacidade de uma sala existente
+      parameters:
+      - description: ID da sala
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Nova capacidade
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.EditCapacitityRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sala atualizada com sucesso
+          schema:
+            $ref: '#/definitions/utils.SuccessResponse'
+        "400":
+          description: Dados inválidos
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Erro interno do servidor
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Editar Capacidade da Sala
+      tags:
+      - rooms
+  /room/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove uma sala do sistema pelo ID
+      parameters:
+      - description: ID da sala
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sala deletada com sucesso
+          schema:
+            $ref: '#/definitions/utils.SuccessResponse'
+        "400":
+          description: ID inválido
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Erro interno do servidor
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Deletar Sala
+      tags:
+      - rooms
+  /user:
+    get:
+      consumes:
+      - application/json
+      description: Retorna uma lista de todos os usuários cadastrados no sistema
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de usuários retornada com sucesso
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+        "500":
+          description: Erro interno do servidor
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Listar Usuários
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Cria um novo usuário no sistema
+      parameters:
+      - description: Dados do usuário
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Usuário criado com sucesso
+          schema:
+            $ref: '#/definitions/utils.UserResponse'
+        "400":
+          description: Dados inválidos
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Erro interno do servidor
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Criar Usuário
+      tags:
+      - users
+  /user/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove um usuário do sistema pelo ID
+      parameters:
+      - description: ID do usuário
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Usuário deletado com sucesso
+          schema:
+            $ref: '#/definitions/utils.SuccessResponse'
+        "400":
+          description: ID inválido
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Erro interno do servidor
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Deletar Usuário
+      tags:
+      - users
+swagger: "2.0"
